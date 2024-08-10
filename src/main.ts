@@ -22,6 +22,9 @@ import Hole from "./Hole.ts";
     const board: Array<Hole> = [];
     let selectedBoardType: BoardType = BoardType.ENGLISH;
 
+    // Input
+    const mouse: Position = new Position(-1,-1);
+
     function draw(): void {
 
         ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -37,7 +40,7 @@ import Hole from "./Hole.ts";
         board.forEach((hole: Hole) => {
 
             // Do not draw illegal holes
-            if (!hole.legal) {
+            if (!hole.allowed()) {
                 return;
             }
 
@@ -49,8 +52,23 @@ import Hole from "./Hole.ts";
                 0,
                 Math.PI * 2
             );
+            ctx.lineWidth = 2;
             ctx.stroke();
             ctx.closePath();
+
+            // Draw peg
+            if (!hole.hasPeg()) {
+                return;
+            }
+
+            ctx.save();
+            ctx.translate(hole.bounding.position.x, hole.bounding.position.y);
+            ctx.beginPath();
+            ctx.arc(0,0, hole.getRadius() * 0.9, 0, Math.PI * 2);
+            ctx.fillStyle = Color.BLACK;
+            ctx.fill();
+            ctx.closePath();
+            ctx.restore();
 
         });
 
@@ -67,6 +85,15 @@ import Hole from "./Hole.ts";
         ctx = <CanvasRenderingContext2D> canvas.getContext('2d');
         resize();
         initBoard();
+
+        // Events
+
+        canvas.addEventListener('mousemove', (ev: MouseEvent) => {
+            ev.preventDefault();
+            mouse.x = ev.offsetX;
+            mouse.y = ev.offsetY;
+        });
+
     }
 
     function initBoard(): void {
@@ -84,17 +111,22 @@ import Hole from "./Hole.ts";
                 const hole = new Hole(radius, position);
                 board.push(hole);
 
+                // Remove the peg in the center.
+                if (x === 3 && y === 3) {
+                    hole.removePeg();
+                }
+
                 // Theme
                 switch (selectedBoardType) {
                     case BoardType.EUROPEAN:
                         if (((x < 2 || x > 4) && (y < 1 || y > 5)) || (x < 1 || x > 5) && (y < 2 || y > 4)) {
-                            hole.legal = false;
+                            hole.illegal();
                         }
                         break;
                     case BoardType.ENGLISH:
                     default:
                         if ((x < 2 || x > 4) && (y < 2 || y > 4)) {
-                            hole.legal = false;
+                            hole.illegal();
                         }
                         break;
                 }
@@ -105,8 +137,7 @@ import Hole from "./Hole.ts";
     }
 
     // Game loop
-    function loop(timestamp: number): void {
-        console.log(timestamp);
+    function loop(): void {
         draw();
         if (animationFrameId) {
             window.requestAnimationFrame(loop);
@@ -164,7 +195,7 @@ import Hole from "./Hole.ts";
     // Starts loop.
     start();
 
-    // Events
+    // Global events
 
     window.addEventListener('resize', () => {
         resize();
