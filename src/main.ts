@@ -1,14 +1,29 @@
 import './style.css';
+import Color from "./Color.ts";
 
 // Game
 ((): void => {
 
     // Canvas / Screen
     let canvas: HTMLCanvasElement;
+    let ctx: CanvasRenderingContext2D;
     let resizeTimeoutId: number = 0;
 
     // Renderer
     let animationFrameId: number = 0;
+
+    function draw(): void {
+
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // Background
+        ctx.beginPath();
+        ctx.rect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = Color.WHITE;
+        ctx.fill();
+        ctx.closePath();
+
+    }
 
     // Constructor of the game.
     function init(): void {
@@ -18,12 +33,14 @@ import './style.css';
             console.error('No canvas element found');
             return;
         }
+        ctx = <CanvasRenderingContext2D> canvas.getContext('2d');
         resize();
     }
 
     // Game loop
     function loop(timestamp: number): void {
         console.log(timestamp);
+        draw();
         if (animationFrameId) {
             window.requestAnimationFrame(loop);
         }
