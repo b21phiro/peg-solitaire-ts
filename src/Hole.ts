@@ -3,12 +3,12 @@ import BoundingArc from "./BoundingArc.ts";
 
 export default class Hole {
 
+    private radius: number = 0;
+    private peg: boolean = true;
+    private legal: boolean = true;
+
     public position: Position;
     public bounding: BoundingArc;
-    public legal: boolean = true;
-
-    private radius: number = 0;
-    private peg: boolean = false;
 
     constructor(radius: number, position: Position) {
         this.radius = radius;
@@ -35,6 +35,18 @@ export default class Hole {
 
     public hasPeg(): boolean {
         return this.peg;
+    }
+
+    public illegal(): void {
+        this.legal = false;
+    }
+
+    public allow(): void {
+        this.legal = true;
+    }
+
+    public allowed(): boolean {
+        return this.legal;
     }
 
 }
