@@ -1,24 +1,47 @@
-import './style.css'
-import typescriptLogo from './typescript.svg'
-import viteLogo from '/vite.svg'
-import { setupCounter } from './counter.ts'
+import './style.css';
 
-document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
-  <div>
-    <a href="https://vitejs.dev" target="_blank">
-      <img src="${viteLogo}" class="logo" alt="Vite logo" />
-    </a>
-    <a href="https://www.typescriptlang.org/" target="_blank">
-      <img src="${typescriptLogo}" class="logo vanilla" alt="TypeScript logo" />
-    </a>
-    <h1>Vite + TypeScript</h1>
-    <div class="card">
-      <button id="counter" type="button"></button>
-    </div>
-    <p class="read-the-docs">
-      Click on the Vite and TypeScript logos to learn more
-    </p>
-  </div>
-`
+((): void => {
 
-setupCounter(document.querySelector<HTMLButtonElement>('#counter')!)
+    let canvas: HTMLCanvasElement;
+    let resizeTimeoutId: number = 0;
+
+    // During resizing of the screen.
+    function resize(): void {
+        console.log("Is resizing");
+        const aspect = 1;
+        const maxWidth: number = window.innerWidth;
+        const maxHeight: number = window.innerHeight;
+        let width: number = maxWidth;
+        let height: number = maxWidth / aspect;
+        if (height > maxHeight) {
+            height = maxHeight;
+            width = maxHeight * aspect;
+        }
+        canvas.width = width;
+        canvas.height = height;
+    }
+
+    // After screen has been resized.
+    function resized(): void {
+        console.log("Done resizing");
+    }
+
+    function init(): void {
+        console.log("Init");
+        canvas = <HTMLCanvasElement> document.getElementById('canvas');
+        if (!canvas) {
+            console.error('No canvas element found');
+            return;
+        }
+        resize();
+    }
+
+    init();
+
+    window.addEventListener('resize', () => {
+        resize();
+        clearTimeout(resizeTimeoutId);
+        resizeTimeoutId = setTimeout(resized, 500);
+    });
+
+})();
