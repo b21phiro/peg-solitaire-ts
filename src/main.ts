@@ -43,9 +43,9 @@ import Hole from "./Hole.ts";
 
             ctx.beginPath();
             ctx.arc(
-                hole.radius + (hole.radius * 2 * hole.position.x),
-                hole.radius + (hole.radius * 2 * hole.position.y),
-                hole.radius,
+                hole.bounding.position.x,
+                hole.bounding.position.y,
+                hole.getRadius(),
                 0,
                 Math.PI * 2
             );
@@ -80,8 +80,8 @@ import Hole from "./Hole.ts";
 
                 // Declaration
                 const position = new Position(x,y);
-                const hole = new Hole(position);
-                hole.radius = (canvas.width / BOARD_GRID_SIZE) / 2;
+                const radius: number = (canvas.width / BOARD_GRID_SIZE) / 2;
+                const hole = new Hole(radius, position);
                 board.push(hole);
 
                 // Theme
@@ -141,7 +141,7 @@ import Hole from "./Hole.ts";
 
         // Update the board.
         board.forEach((hole: Hole) => {
-            hole.radius = (canvas.width / BOARD_GRID_SIZE) / 2;
+            hole.setRadius((canvas.width / BOARD_GRID_SIZE) / 2);
         });
 
         start();
