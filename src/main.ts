@@ -3,6 +3,7 @@ import Color from "./Color.ts";
 import BoardType from "./BoardType.ts";
 import Position from "./Position.ts";
 import Hole from "./Hole.ts";
+import Mouse from "./Mouse.ts";
 
 // Game
 ((): void => {
@@ -23,7 +24,9 @@ import Hole from "./Hole.ts";
     let selectedBoardType: BoardType = BoardType.ENGLISH;
 
     // Input
-    const mouse: Position = new Position(-1,-1);
+    const mouse: Mouse = new Mouse(new Position(-1,-1));
+    let selectedPeg: Hole | null;
+    let selectedHole: Hole | null;
 
     function draw(): void {
 
@@ -82,7 +85,9 @@ import Hole from "./Hole.ts";
             console.error('No canvas element found');
             return;
         }
+
         ctx = <CanvasRenderingContext2D> canvas.getContext('2d');
+
         resize();
         initBoard();
 
@@ -90,8 +95,17 @@ import Hole from "./Hole.ts";
 
         canvas.addEventListener('mousemove', (ev: MouseEvent) => {
             ev.preventDefault();
-            mouse.x = ev.offsetX;
-            mouse.y = ev.offsetY;
+            mouse.position.set(ev.offsetX, ev.offsetY);
+        });
+
+        canvas.addEventListener('click', (ev: MouseEvent) => {
+           ev.preventDefault();
+           mouse.position.set(ev.offsetX, ev.offsetY);
+
+           // Selects a peg.
+           selectedPeg = <Hole> board.find((hole: Hole) => (hole.hasPeg() && hole.bounding.intersects(mouse.position)));
+           selectedHole = <Hole> board.find((hole: Hole) => (!hole.hasPeg() && hole.bounding.intersects(mouse.position)));
+
         });
 
     }

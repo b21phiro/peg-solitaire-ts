@@ -24,4 +24,9 @@ export default class BoundingArc {
         this.position.y = radius + (radius * 2 * this.y);
     }
 
+    // TODO: Implement intersection of circle.
+    public intersects(position: Position): boolean {
+        return false;
+    }
+
 }

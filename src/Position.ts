@@ -5,4 +5,10 @@ export default class Position {
         this.x = x;
         this.y = y;
     }
+
+    public set(x: number, y: number): void {
+        this.x = x;
+        this.y = y;
+    }
+
 }
