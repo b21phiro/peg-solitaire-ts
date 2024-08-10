@@ -1,9 +1,33 @@
 import './style.css';
 
+// Game
 ((): void => {
 
+    // Canvas / Screen
     let canvas: HTMLCanvasElement;
     let resizeTimeoutId: number = 0;
+
+    // Renderer
+    let animationFrameId: number = 0;
+
+    // Constructor of the game.
+    function init(): void {
+        console.log("Init");
+        canvas = <HTMLCanvasElement> document.getElementById('canvas');
+        if (!canvas) {
+            console.error('No canvas element found');
+            return;
+        }
+        resize();
+    }
+
+    // Game loop
+    function loop(timestamp: number): void {
+        console.log(timestamp);
+        if (animationFrameId) {
+            window.requestAnimationFrame(loop);
+        }
+    }
 
     // During resizing of the screen.
     function resize(): void {
@@ -26,17 +50,22 @@ import './style.css';
         console.log("Done resizing");
     }
 
-    function init(): void {
-        console.log("Init");
-        canvas = <HTMLCanvasElement> document.getElementById('canvas');
-        if (!canvas) {
-            console.error('No canvas element found');
-            return;
-        }
-        resize();
+    function start(): void {
+        console.log("Start");
+        animationFrameId = window.requestAnimationFrame(loop);
     }
 
+    function stop(): void {
+        console.log("Stop");
+    }
+
+    // Init game
     init();
+
+    // Starts loop.
+    start();
+
+    // Events
 
     window.addEventListener('resize', () => {
         resize();
