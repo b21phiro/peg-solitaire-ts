@@ -32,6 +32,11 @@ import './style.css';
     // During resizing of the screen.
     function resize(): void {
         console.log("Is resizing");
+
+        // Stop game-loop.
+        stop();
+
+        // Resize canvas.
         const aspect = 1;
         const maxWidth: number = window.innerWidth;
         const maxHeight: number = window.innerHeight;
@@ -48,6 +53,8 @@ import './style.css';
     // After screen has been resized.
     function resized(): void {
         console.log("Done resizing");
+        // Start game-loop again.
+        start();
     }
 
     function start(): void {
@@ -57,6 +64,8 @@ import './style.css';
 
     function stop(): void {
         console.log("Stop");
+        window.cancelAnimationFrame(animationFrameId);
+        animationFrameId = 0;
     }
 
     // Init game
