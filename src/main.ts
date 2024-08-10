@@ -25,8 +25,7 @@ import Mouse from "./Mouse.ts";
 
     // Input
     const mouse: Mouse = new Mouse(new Position(-1,-1));
-    let selectedPeg: Hole | null;
-    let selectedHole: Hole | null;
+    const selected: Array<Hole> = [];
 
     function draw(): void {
 
@@ -69,6 +68,8 @@ import Mouse from "./Mouse.ts";
             ctx.beginPath();
             ctx.arc(0,0, hole.getRadius() * 0.9, 0, Math.PI * 2);
             ctx.fillStyle = Color.BLACK;
+            // Highlight if selected
+            ctx.fillStyle = (hole.selected) ? Color.BLUE : Color.BLACK;
             ctx.fill();
             ctx.closePath();
             ctx.restore();
@@ -101,11 +102,12 @@ import Mouse from "./Mouse.ts";
         canvas.addEventListener('click', (ev: MouseEvent) => {
            ev.preventDefault();
            mouse.position.set(ev.offsetX, ev.offsetY);
-
-           // Selects a peg.
-           selectedPeg = <Hole> board.find((hole: Hole) => (hole.hasPeg() && hole.bounding.intersects(mouse.position)));
-           selectedHole = <Hole> board.find((hole: Hole) => (!hole.hasPeg() && hole.bounding.intersects(mouse.position)));
-
+           board.forEach((hole: Hole) => {
+               if (hole.bounding.intersects(mouse.position)) {
+                   hole.selected = true;
+                   selected.indexOf(hole) === -1 ? selected.push(hole) : null;
+               }
+           });
         });
 
     }
@@ -152,6 +154,7 @@ import Mouse from "./Mouse.ts";
 
     // Game loop
     function loop(): void {
+        update();
         draw();
         if (animationFrameId) {
             window.requestAnimationFrame(loop);
@@ -201,6 +204,10 @@ import Mouse from "./Mouse.ts";
         console.log("Stop");
         window.cancelAnimationFrame(animationFrameId);
         animationFrameId = 0;
+    }
+
+    function update(): void {
+        console.log(selected);
     }
 
     // Init game

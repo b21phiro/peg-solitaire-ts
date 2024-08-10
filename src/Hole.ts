@@ -9,6 +9,7 @@ export default class Hole {
 
     public position: Position;
     public bounding: BoundingArc;
+    public selected: boolean;
 
     constructor(radius: number, position: Position) {
         this.radius = radius;
@@ -47,6 +48,13 @@ export default class Hole {
 
     public allowed(): boolean {
         return this.legal;
+    }
+
+    public select(position: Position): Hole | void {
+        if (this.bounding.intersects(position)) {
+            this.selected = true;
+            return this;
+        }
     }
 
 }
