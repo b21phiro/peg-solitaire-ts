@@ -9,9 +9,30 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  flex-direction: column;
+  width: 100%;
   min-height: 100vh;
+  gap: 4rem;
+}
+
+#main {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  flex: 1;
+  aspect-ratio: 1;
 }
 
 #canvas {
   display: block;
+}
+
+#header,
+#footer {
+  padding: 2rem;
+}
+
+.credits {
+
 }
