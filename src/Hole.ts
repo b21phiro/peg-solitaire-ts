@@ -9,7 +9,6 @@ export default class Hole {
 
     public position: Position;
     public bounding: BoundingArc;
-    public selected: boolean;
 
     constructor(radius: number, position: Position) {
         this.radius = radius;
@@ -26,10 +25,6 @@ export default class Hole {
         return this.radius;
     }
 
-    public placePeg(): void {
-        this.peg = true;
-    }
-
     public removePeg(): void {
         this.peg = false;
     }
@@ -42,19 +37,30 @@ export default class Hole {
         this.legal = false;
     }
 
-    public allow(): void {
-        this.legal = true;
-    }
-
     public allowed(): boolean {
         return this.legal;
     }
 
     public select(position: Position): Hole | void {
-        if (this.bounding.intersects(position)) {
-            this.selected = true;
+        if (this.legal && this.bounding.intersects(position)) {
             return this;
         }
+    }
+
+    public selectPeg(position: Position): Hole | void {
+        if (this.hasPeg()) {
+            return this.select(position);
+        }
+    }
+
+    public selectWithoutPeg(position: Position): Hole | void {
+        if (!this.hasPeg()) {
+            return this.select(position);
+        }
+    }
+
+    public setPeg(): void {
+        this.peg = true;
     }
 
 }

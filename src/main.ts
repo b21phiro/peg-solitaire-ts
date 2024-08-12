@@ -25,7 +25,12 @@ import Mouse from "./Mouse.ts";
 
     // Input
     const mouse: Mouse = new Mouse(new Position(-1,-1));
-    const selected: Array<Hole> = [];
+    const valid: Array<Hole> = []; // Valid moves based on selected peg.
+    let hasSelectedPeg: boolean = false;
+    let hasSelectedHole: boolean = false;
+    let selectedPeg: Hole | null = null;
+    let selectedHole: Hole | null = null
+    let pegToRemove: Hole | null = null;
 
     function draw(): void {
 
@@ -67,13 +72,23 @@ import Mouse from "./Mouse.ts";
             ctx.translate(hole.bounding.position.x, hole.bounding.position.y);
             ctx.beginPath();
             ctx.arc(0,0, hole.getRadius() * 0.9, 0, Math.PI * 2);
-            ctx.fillStyle = Color.BLACK;
-            // Highlight if selected
-            ctx.fillStyle = (hole.selected) ? Color.BLUE : Color.BLACK;
+            ctx.fillStyle = (selectedPeg === hole) ? Color.BLUE : Color.BLACK;
             ctx.fill();
             ctx.closePath();
             ctx.restore();
 
+        });
+
+        // Draw valid holes while selected
+        valid.forEach((hole: Hole) => {
+            ctx.save();
+            ctx.translate(hole.bounding.position.x, hole.bounding.position.y);
+            ctx.beginPath();
+            ctx.arc(0,0, hole.getRadius() * 0.5, 0, Math.PI * 2);
+            ctx.fillStyle = Color.BLUE;
+            ctx.fill();
+            ctx.closePath();
+            ctx.restore();
         });
 
     }
@@ -100,13 +115,92 @@ import Mouse from "./Mouse.ts";
         });
 
         canvas.addEventListener('click', (ev: MouseEvent) => {
-           ev.preventDefault();
-           mouse.position.set(ev.offsetX, ev.offsetY);
-           board.forEach((hole: Hole) => {
-               if (hole.bounding.intersects(mouse.position)) {
-                   hole.selected = true;
-                   selected.indexOf(hole) === -1 ? selected.push(hole) : null;
-               }
+            ev.preventDefault();
+            mouse.position.set(ev.offsetX, ev.offsetY);
+
+            const selected = board.find((hole: Hole) => hole.select(mouse.position)) ?? null;
+
+            if (selected && selected.hasPeg()) {
+                hasSelectedPeg = true;
+                hasSelectedHole = false;
+                selectedPeg = selected;
+                selectedHole = null;
+
+                // Find valid holes
+                moves();
+
+            }
+
+            if (selected && !selected.hasPeg() && hasSelectedPeg && selectedPeg) {
+                hasSelectedHole = true;
+                selectedHole = selected;
+            }
+
+        });
+
+    }
+
+    // Finds valid moves based on selected peg.
+    function moves(): void {
+
+        // Reset valid moves.
+        valid.splice(0, valid.length);
+
+        if (!selectedPeg) {
+            return;
+        }
+
+        const selectedPegPos: Position = selectedPeg.position;
+
+        // Adjacent pegs
+        const adjacentPegs: Array<Hole> = board.filter((hole: Hole) => {
+
+            if (!hole.allowed() || !hole.hasPeg()) {
+                return;
+            }
+
+            const pos: Position = hole.position;
+
+            if (
+                (selectedPegPos.x === pos.x && selectedPegPos.y - 1 === pos.y) || // Top
+                (selectedPegPos.x + 1 === pos.x && selectedPegPos.y === pos.y) || // Right
+                (selectedPegPos.x === pos.x && selectedPegPos.y + 1 === pos.y) || // Bottom
+                (selectedPegPos.x - 1 === pos.x && selectedPegPos.y === pos.y)  // Left
+            ) {
+                return hole;
+            }
+
+        });
+
+        // Hole beyond the adjacent pegs?
+        const adjacentHoles = board.filter((hole: Hole) => {
+
+            if (!hole.allowed() || hole.hasPeg()) {
+                return;
+            }
+
+            const pos: Position = hole.position;
+
+            if (
+                (selectedPegPos.x === pos.x && selectedPegPos.y - 2 === pos.y) || // Top
+                (selectedPegPos.x + 2 === pos.x && selectedPegPos.y === pos.y) || // Right
+                (selectedPegPos.x === pos.x && selectedPegPos.y + 2 === pos.y) || // Bottom
+                (selectedPegPos.x - 2 === pos.x && selectedPegPos.y === pos.y)  // Left
+            ) {
+                return hole;
+            }
+
+        });
+
+        adjacentHoles.forEach((hole: Hole) => {
+           adjacentPegs.forEach((peg: Hole) => {
+                if ((peg.position.x === hole.position.x && peg.position.y - 1 === hole.position.y) || // Top
+                    (peg.position.x + 1 === hole.position.x && peg.position.y === hole.position.y) || // Right
+                    (peg.position.x === hole.position.x && peg.position.y + 1 === hole.position.y) || // Bottom
+                    (peg.position.x - 1 === hole.position.x && peg.position.y === hole.position.y)
+                ) {
+                    valid.push(hole);
+                }
            });
         });
 
@@ -207,7 +301,54 @@ import Mouse from "./Mouse.ts";
     }
 
     function update(): void {
-        console.log(selected);
+        if (selectedHole && selectedPeg && valid.length) {
+            console.log("Move");
+
+            board.forEach((hole: Hole) => {
+
+                if (!hole.allowed() || !hole.hasPeg() || !selectedPeg?.position || !selectedHole?.position) {
+                    return;
+                }
+
+                if (
+                    (selectedPeg.position.x + 1 === hole.position.x &&
+                    selectedHole.position.x - 1 === hole.position.x &&
+                    selectedPeg.position.y === hole.position.y &&
+                    selectedHole.position.y === hole.position.y) || // Right
+
+                    (selectedPeg.position.x - 1 === hole.position.x &&
+                    selectedHole.position.x + 1 === hole.position.x &&
+                    selectedPeg.position.y === hole.position.y &&
+                    selectedHole.position.y === hole.position.y) || // Left
+
+                    (selectedPeg.position.x === hole.position.x &&
+                    selectedHole.position.x === hole.position.x &&
+                    selectedPeg.position.y - 1 === hole.position.y &&
+                    selectedHole.position.y + 1 === hole.position.y) || // Up
+
+                    (selectedPeg.position.x === hole.position.x &&
+                    selectedHole.position.x === hole.position.x &&
+                    selectedPeg.position.y + 1 === hole.position.y &&
+                    selectedHole.position.y - 1 === hole.position.y) // Down
+
+                ) {
+                    pegToRemove = hole;
+                }
+
+            });
+
+            if (!pegToRemove) {
+                return;
+            }
+
+            pegToRemove.removePeg();
+            selectedPeg.removePeg();
+            selectedHole.setPeg();
+
+            selectedPeg = null;
+            selectedHole = null;
+            valid.splice(0, valid.length);
+        }
     }
 
     // Init game
