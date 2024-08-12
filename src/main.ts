@@ -28,7 +28,6 @@ import Mouse from "./Mouse.ts";
     const mouse: Mouse = new Mouse(new Position(-1,-1));
     const valid: Array<Hole> = []; // Valid moves based on selected peg.
     let hasSelectedPeg: boolean = false;
-    let hasSelectedHole: boolean = false;
     let selectedPeg: Hole | null = null;
     let selectedHole: Hole | null = null
     let pegToRemove: Hole | null = null;
@@ -72,7 +71,7 @@ import Mouse from "./Mouse.ts";
             ctx.save();
             ctx.translate(hole.bounding.position.x, hole.bounding.position.y);
             ctx.beginPath();
-            ctx.arc(0,0, hole.getRadius() * 0.9, 0, Math.PI * 2);
+            ctx.arc(0, 0, hole.getRadius() * 0.9, 0, Math.PI * 2);
             ctx.fillStyle = (selectedPeg === hole) ? Color.BLUE : Color.BLACK;
             ctx.fill();
             ctx.closePath();
@@ -85,7 +84,7 @@ import Mouse from "./Mouse.ts";
             ctx.save();
             ctx.translate(hole.bounding.position.x, hole.bounding.position.y);
             ctx.beginPath();
-            ctx.arc(0,0, hole.getRadius() * 0.5, 0, Math.PI * 2);
+            ctx.arc(0, 0, hole.getRadius() * 0.5, 0, Math.PI * 2);
             ctx.fillStyle = Color.BLUE;
             ctx.fill();
             ctx.closePath();
@@ -96,19 +95,17 @@ import Mouse from "./Mouse.ts";
 
     // Constructor of the game.
     function init(): void {
-        console.log("Init");
-        canvas = <HTMLCanvasElement> document.getElementById('canvas');
+
+        canvas = <HTMLCanvasElement>document.getElementById('canvas');
         if (!canvas) {
             console.error('No canvas element found');
             return;
         }
 
-        ctx = <CanvasRenderingContext2D> canvas.getContext('2d');
+        ctx = <CanvasRenderingContext2D>canvas.getContext('2d');
 
-        resize();
+        resizing();
         initBoard();
-
-        // Events
 
         canvas.addEventListener('mousemove', (ev: MouseEvent) => {
             ev.preventDefault();
@@ -123,7 +120,6 @@ import Mouse from "./Mouse.ts";
 
             if (selected && selected.hasPeg()) {
                 hasSelectedPeg = true;
-                hasSelectedHole = false;
                 selectedPeg = selected;
                 selectedHole = null;
 
@@ -133,7 +129,6 @@ import Mouse from "./Mouse.ts";
             }
 
             if (selected && !selected.hasPeg() && hasSelectedPeg && selectedPeg) {
-                hasSelectedHole = true;
                 selectedHole = selected;
             }
 
@@ -247,7 +242,6 @@ import Mouse from "./Mouse.ts";
 
     }
 
-    // Game loop
     function loop(): void {
         update();
         draw();
@@ -256,63 +250,47 @@ import Mouse from "./Mouse.ts";
         }
     }
 
-    // During resizing of the screen.
-    function resize(): void {
-        console.log("Is resizing");
-
-        // Get the styles of the document.
-
-        // Stop game-loop.
-        stop();
-
-        // Resize canvas.
-        const aspect = 1;
-
+    function setCanvasSize(): void {
         const parent: HTMLElement = <HTMLElement> canvas.parentElement;
         const styles = window.getComputedStyle(parent);
         const padding: number = parseFloat(styles.padding) * 2;
-
-        // Removes padding from the canvas.
         const maxWidth: number = parent.offsetWidth - padding;
         const maxHeight: number = parent.offsetHeight - padding;
-
-        let width: number = maxWidth;
-        let height: number = maxWidth / aspect;
-        if (height > maxHeight) {
-            height = maxHeight;
-            width = maxHeight * aspect;
+        let size = maxWidth;
+        if (size > maxHeight) {
+            size = maxHeight;
         }
-        canvas.width = width;
-        canvas.height = height;
+        canvas.width = size;
+        canvas.height = size;
     }
 
-    // After screen has been resized.
-    function resized(): void {
-        console.log("Done resizing");
-        // Start game-loop again.
-
-        // Update the board.
+    function setBoardSize(): void {
         board.forEach((hole: Hole) => {
             hole.setRadius((canvas.width / BOARD_GRID_SIZE) / 2);
         });
+    }
 
+    function resizing(): void {
+        stop();
+        setCanvasSize();
+        setBoardSize();
+    }
+
+    function resized(): void {
         start();
     }
 
     function start(): void {
-        console.log("Start");
         animationFrameId = window.requestAnimationFrame(loop);
     }
 
     function stop(): void {
-        console.log("Stop");
         window.cancelAnimationFrame(animationFrameId);
         animationFrameId = 0;
     }
 
     function update(): void {
         if (selectedHole && selectedPeg && valid.length) {
-            console.log("Move");
 
             board.forEach((hole: Hole) => {
 
@@ -367,16 +345,11 @@ import Mouse from "./Mouse.ts";
         }
     }
 
-    // Init game
     init();
-
-    // Starts loop.
     start();
 
-    // Global events
-
     window.addEventListener('resize', () => {
-        resize();
+        resizing();
         clearTimeout(resizeTimeoutId);
         resizeTimeoutId = setTimeout(resized, 500);
     });
