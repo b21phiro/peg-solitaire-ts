@@ -341,6 +341,12 @@ import Mouse from "./Mouse.ts";
                 return;
             }
 
+            let isValid = valid.find((hole: Hole) => (hole === selectedHole));
+
+            if (!isValid) {
+                return;
+            }
+
             pegToRemove.removePeg();
             selectedPeg.removePeg();
             selectedHole.setPeg();
