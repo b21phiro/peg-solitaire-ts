@@ -1,3 +1,4 @@
+import './assets/font/dosis.css';
 import './style.css';
 import Color from "./Color.ts";
 import BoardType from "./BoardType.ts";
@@ -259,14 +260,22 @@ import Mouse from "./Mouse.ts";
     function resize(): void {
         console.log("Is resizing");
 
+        // Get the styles of the document.
+
         // Stop game-loop.
         stop();
 
         // Resize canvas.
         const aspect = 1;
+
         const parent: HTMLElement = <HTMLElement> canvas.parentElement;
-        const maxWidth: number = parent.offsetWidth;
-        const maxHeight: number = parent.offsetHeight;
+        const styles = window.getComputedStyle(parent);
+        const padding: number = parseFloat(styles.padding) * 2;
+
+        // Removes padding from the canvas.
+        const maxWidth: number = parent.offsetWidth - padding;
+        const maxHeight: number = parent.offsetHeight - padding;
+
         let width: number = maxWidth;
         let height: number = maxWidth / aspect;
         if (height > maxHeight) {
