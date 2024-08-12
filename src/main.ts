@@ -264,8 +264,9 @@ import Mouse from "./Mouse.ts";
 
         // Resize canvas.
         const aspect = 1;
-        const maxWidth: number = window.innerWidth;
-        const maxHeight: number = window.innerHeight;
+        const parent: HTMLElement = <HTMLElement> canvas.parentElement;
+        const maxWidth: number = parent.offsetWidth;
+        const maxHeight: number = parent.offsetHeight;
         let width: number = maxWidth;
         let height: number = maxWidth / aspect;
         if (height > maxHeight) {
